@@ -15,14 +15,22 @@ def build_pipeline(base_dir: str):
     configs = load_all_configs(base_dir)
     frames_cfg = configs["system"].get("frames", {})
 
-    camera = build_camera(configs["camera"])
+    camera_cfg = dict(configs["camera"])
+    perception_cfg = dict(configs["perception"])
+
+    # Safe default for local/sim runs: a mock camera cannot produce TNT detections.
+    # If source=mock and perception mode is not mock, force mock perception.
+    if str(camera_cfg.get("source", "")).lower() == "mock" and str(perception_cfg.get("mode", "")).lower() != "mock":
+        perception_cfg["mode"] = "mock"
+
+    camera = build_camera(camera_cfg)
     perception = PoseEstimator(
         camera=camera,
-        perception_cfg=configs["perception"],
+        perception_cfg=perception_cfg,
         markers_cfg=configs["markers"],
         transforms_cfg=configs["transforms"],
         frames_cfg=frames_cfg,
-        camera_cfg=configs["camera"],
+        camera_cfg=camera_cfg,
         tnt_cfg=configs.get("tnt", {}),
     )
 

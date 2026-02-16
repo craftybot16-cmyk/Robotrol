@@ -1,0 +1,6 @@
+pytest
+numpy
+opencv-python
+pyserial
+pygame
+Pillow
